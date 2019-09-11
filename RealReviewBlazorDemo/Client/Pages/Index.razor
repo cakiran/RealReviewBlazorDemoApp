@@ -1,0 +1,127 @@
+﻿@page "/"
+@using RealReviewBlazorDemo.Shared;
+@inject HttpClient Http
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <form class="card card-sm">
+                <div class="card-body row  align-items-center">
+                    <div class="col-auto">
+                        <i class="fas fa-search h4 text-body"></i>
+                    </div>
+                    <div class="col">
+                        <input class="form-control form-control-lg form-control-borderless" @bind="SearchText" type="search" placeholder="Business search (e.g. pizza,cupcakes etc.)" />
+                    </div>
+                    <div class="col">
+                        <input class="form-control form-control-lg form-control-borderless" @bind="Location" type="search" placeholder="Location (zipcode,city)" />
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-lg btn-warning" type="button" @onclick="GetBusinessesAsync">
+                            @if (isLoading == true)
+                            {<div class="spinner-border" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div> }
+                            else
+                            {<i>Search</i>}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row d-flex p-1">
+        <div class="col-2" id="business">
+            <div class="flex-column left p-1">
+                @if (isLoading == true)
+                {
+                    <div class="card card-block m-1">
+                        <div class="card-header text-white bg-info">Loading...</div>
+                        <div class="card-body">
+                            Loading...
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @foreach (Business item in businesses)
+                    {
+                        <div class="card card-block m-1" @onclick="@( e => SetBusiness(item))">
+                            <div class="card-header rounded-0 text-white bg-info"><a>@item.Name</a></div>
+                            <div class="card-body">
+                                <div>@item.Phone</div>
+                                <div>@item.Address</div>
+                                <div>@item.City</div>
+                                <div>@item.State</div>
+                                <div>@item.ZipCode</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="col-10 p-1">
+            <div>
+                <div class="card  card-block mb-1">
+                    <div class="card-header text-white bg-info">Reviews - @SelectedBusiness?.Name</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            @foreach (string review in SelectedBusiness?.Reviews != null ? SelectedBusiness?.Reviews : new string[] { })
+                            {
+                                <li class="list-group-item">@review</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <div class="card card-block">
+                    <div class="card-header text-white bg-info">Real Review Score</div>
+                    <div class="card-body  d-flex flex-column mb-1">
+                        <div class="d-flex">
+                            <div class="p-2 m-1 flex-fill border border-light rounded align-self-center ">
+                                <span class="text-info">Accuracy:</span>@realReviewScoreData?.Accuracy
+                            </div>
+                            <div class="p-2 m-1 flex-fill border border-light rounded align-self-center ">
+                                <span class="text-info">Area Under ROCCurve:</span>@realReviewScoreData?.AreaUnderROCCurve
+                            </div>
+                            <div class="p-2 m-1 flex-fill border border-light rounded align-self-center ">
+                                <span class="text-info"> F1 Score:</span>@realReviewScoreData?.F1Score
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body  d-flex flex-column">
+                        <div class="d-flex">
+                            <div class="p-2 m-1 flex-fill border border-info rounded text-center">
+                                <h1 class="font-weight-bold">@realReviewScoreData?.RealReviewScore</h1>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="height:20px;width: @realReviewScoreData?.RealReviewScore.ToString()%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    protected string SearchText { get; set; }
+    protected string Location { get; set; }
+    protected Business SelectedBusiness { get; set; } = new Business();
+    RealReviewScoreData realReviewScoreData { get; set; } = new RealReviewScoreData();
+    bool isLoading = false;
+    List<Business> businesses = new List<Business>();
+
+    
+    private async Task SetBusiness(Business business)
+    {
+        SelectedBusiness = business;
+        realReviewScoreData = await Http.PostJsonAsync<RealReviewScoreData>("api/businesses/realreviewscore", business);
+    }
+
+    private async Task GetBusinessesAsync()
+    {
+        isLoading = true;
+        businesses = await Http.GetJsonAsync<List<Business>>($"api/businesses/{SearchText}/{Location}");
+        isLoading = false;
+    }
+}
