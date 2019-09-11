@@ -1,4 +1,4 @@
-# RealReviewBlazorDemoApp
+# RealReview Blazor Demo App
 RealReview app developed using Blazor .net
 
 ## Real Review App: ##
