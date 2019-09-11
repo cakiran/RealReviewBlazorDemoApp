@@ -28,7 +28,7 @@ namespace RealReviewBlazorDemo.Server.Controllers
             if (string.IsNullOrEmpty(location) || string.IsNullOrEmpty(searchstring))
                 return new List<Business>();
             List<Business> lstBusiness = new List<Business>();
-            var client = new Yelp.Api.Client("2R3rYYTTNXbGEp5MJFXrV9JgRZkoDhZeCKcAQCgDyKzHnVKfN85E8nFq7AhibN2zr0vdAb7AvtCGRg2U2WrqCtigLg26xo4XxgEKPhjxDBxVLIdclwTpPdaX3kX8XHYx");
+            var client = new Yelp.Api.Client("<apikey>");
             Yelp.Api.Models.SearchRequest searchRequest = new Yelp.Api.Models.SearchRequest();
             searchRequest.Location = location;
             searchRequest.Term = searchstring;
